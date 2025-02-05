@@ -8,9 +8,14 @@ import 'package:geolocator/geolocator.dart';
 // import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_colors.dart';
+import 'package:device_preview/device_preview.dart';
+import 'screens/splash_screen.dart';
+import 'utils/app_strings.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,7 +25,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-      home: const MapScreen(),
+      home: const SafeArea(
+        child: SplashScreen(), // Changed from MapScreen to SplashScreen
+      ),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -69,7 +76,7 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _checkPermissions() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      setState(() => _errorMessage = 'Location services are disabled');
+      setState(() => _errorMessage = AppStrings.locationServicesDisabled);
       return;
     }
 
@@ -77,14 +84,14 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        setState(() => _errorMessage = 'Location permissions are denied');
+        setState(() => _errorMessage = AppStrings.locationPermissionsDenied);
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      setState(
-          () => _errorMessage = 'Location permissions are permanently denied');
+      setState(() =>
+          _errorMessage = AppStrings.locationPermissionsPermanentlyDenied);
       return;
     }
 
@@ -246,7 +253,7 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 // const SizedBox(height: 10),
                 const Text(
-                  'Navigation App',
+                  AppStrings.navigationApp,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -254,7 +261,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
                 const Text(
-                  'Menu Options',
+                  AppStrings.menuOptions,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -263,34 +270,60 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.map),
-            title: const Text('Map Style'),
-            onTap: () {
-              // TODO: Implement map style switching
-              Navigator.pop(context);
-            },
+          
+          // BLOCK Section
+          const Padding(
+            padding: EdgeInsets.only(left: 16.0, top: 16.0),
+            child: Text(
+              'BLOCK',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Route History'),
-            onTap: () {
-              // TODO: Implement route history
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.bookmark),
-            title: const Text('Saved Places'),
-            onTap: () {
-              // TODO: Implement saved places
-              Navigator.pop(context);
-            },
-          ),
+          ...List.generate(8, (index) {
+            final blockLetter = String.fromCharCode('A'.codeUnitAt(0) + index);
+            return ListTile(
+              leading: const Icon(Icons.block),
+              title: Text('Block $blockLetter'),
+              onTap: () {
+                // Handle block selection
+                Navigator.pop(context);
+              },
+            );
+          }),
+
           const Divider(),
+
+          // IMPHI Section
+          const Padding(
+            padding: EdgeInsets.only(left: 16.0, top: 16.0),
+            child: Text(
+              'IMPHI',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          ...List.generate(9, (index) {
+            final imphiLetter = String.fromCharCode('A'.codeUnitAt(0) + index);
+            return ListTile(
+              leading: const Icon(Icons.apartment),
+              title: Text('IMPHI $imphiLetter'),
+              onTap: () {
+                // Handle IMPHI selection
+                Navigator.pop(context);
+              },
+            );
+          }),
+
+          const Divider(),
+          // Settings and About options
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            title: const Text(AppStrings.settings),
             onTap: () {
               // TODO: Implement settings
               Navigator.pop(context);
@@ -298,7 +331,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.info),
-            title: const Text('About'),
+            title: const Text(AppStrings.about),
             onTap: () {
               // TODO: Implement about page
               Navigator.pop(context);
@@ -342,14 +375,14 @@ class _MapScreenState extends State<MapScreen> {
     final screenSize = MediaQuery.of(context).size;
     final mapSize = screenSize.width * 0.9; // Square size based on screen width
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('GUIDE UNIV'),
-        elevation: 0,
-      ),
-      drawer: _buildDrawer(),
-      body: SafeArea(
-        child: Stack(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(AppStrings.appName),
+          elevation: 0,
+        ),
+        drawer: _buildDrawer(),
+        body: Stack(
           children: [
             if (_errorMessage.isNotEmpty)
               Center(child: Text(_errorMessage))
@@ -434,13 +467,14 @@ class _MapScreenState extends State<MapScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Distance: ${_distance.toStringAsFixed(2)} km'),
-                      Text('Duration: $_duration'),
+                      Text(
+                          '${AppStrings.distance}${_distance.toStringAsFixed(2)}${AppStrings.km}'),
+                      Text('${AppStrings.duration}$_duration'),
                       ElevatedButton(
                         onPressed: () {
                           // Implement turn-by-turn navigation
                         },
-                        child: const Text('Start Navigation'),
+                        child: const Text(AppStrings.startNavigation),
                       ),
                     ],
                   ),
@@ -448,17 +482,17 @@ class _MapScreenState extends State<MapScreen> {
               ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (currentLocation != null) {
-            mapController.move(
-              LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
-              15.0,
-            );
-          }
-        },
-        child: const Icon(Icons.my_location),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (currentLocation != null) {
+              mapController.move(
+                LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+                15.0,
+              );
+            }
+          },
+          child: const Icon(Icons.my_location),
+        ),
       ),
     );
   }
